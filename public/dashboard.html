@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — PlastiCore AI</title>
+  <meta name="description" content="View your plastic waste analysis history, manage data, and download reports."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/index.html" class="logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">PlastiCore<em>AI</em></span>
+      </a>
+      <nav class="header-nav">
+        <a href="/index.html">Home</a>
+        <a href="/index.html#upload-section">Analyze</a>
+      </nav>
+      <div class="dash-user-bar">
+        <span class="dash-user-name" id="dashUserName">User</span>
+        <span class="role-badge" id="dashUserRole">user</span>
+        <button class="btn-ghost btn-sm" id="dashLogoutBtn">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DASHBOARD CONTAINER -->
+  <section class="dashboard-section">
+    <div class="section-inner">
+
+      <!-- ═══════ USER DASHBOARD ═══════ -->
+      <div id="userDashboard" style="display:none">
+        <div class="dash-title-row">
+          <div>
+            <h1 class="section-title">My Dashboard</h1>
+            <p class="section-sub">Your personal upload history</p>
+          </div>
+          <a href="/index.html#upload-section" class="btn-primary">🔬 Analyze New Images →</a>
+        </div>
+
+        <div class="dash-stat-row">
+          <div class="dash-stat-card">
+            <div class="dash-stat-icon">📊</div>
+            <div class="dash-stat-value" id="userUploadCount">0</div>
+            <div class="dash-stat-label">Total Uploads</div>
+          </div>
+        </div>
+
+        <div class="dash-table-wrap">
+          <table class="dash-table" id="userTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>File Name</th>
+                <th>Plastic Type</th>
+                <th>Confidence</th>
+                <th>Recommended Use</th>
+                <th>Strength</th>
+                <th>CO₂ Saved</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody">
+              <tr><td colspan="7" class="table-loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════ ADMIN DASHBOARD ═══════ -->
+      <div id="adminDashboard" style="display:none">
+        <div class="dash-title-row">
+          <div>
+            <h1 class="section-title">Admin Dashboard</h1>
+            <p class="section-sub">View and manage all user data</p>
+          </div>
+          <div class="dash-title-actions">
+            <button class="btn-download" id="downloadCsvBtn">📄 Download CSV</button>
+            <button class="btn-download" id="downloadPdfBtn">📑 Download PDF</button>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="dash-stat-row">
+          <div class="dash-stat-card">
+            <div class="dash-stat-icon">📊</div>
+            <div class="dash-stat-value" id="adminUploadCount">0</div>
+            <div class="dash-stat-label">Total Records</div>
+          </div>
+          <div class="dash-stat-card">
+            <div class="dash-stat-icon">👥</div>
+            <div class="dash-stat-value" id="adminUserCount">0</div>
+            <div class="dash-stat-label">Registered Users</div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="dash-filter-bar">
+          <div class="filter-group">
+            <label class="filter-label">Plastic Type</label>
+            <select id="filterPlasticType" class="form-input form-select filter-input">
+              <option value="">All Types</option>
+              <option value="PET">PET</option>
+              <option value="HDPE">HDPE</option>
+              <option value="PVC">PVC</option>
+              <option value="LDPE">LDPE</option>
+              <option value="PP">PP</option>
+              <option value="PS">PS</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Date From</label>
+            <input type="date" id="filterDateFrom" class="form-input filter-input" />
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Date To</label>
+            <input type="date" id="filterDateTo" class="form-input filter-input" />
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">User ID</label>
+            <input type="text" id="filterUser" class="form-input filter-input" placeholder="User ID (optional)" />
+          </div>
+          <div class="filter-actions">
+            <button class="btn-primary btn-sm" id="applyFilterBtn">Apply</button>
+            <button class="btn-ghost btn-sm" id="clearFilterBtn">Clear</button>
+          </div>
+        </div>
+
+        <!-- All Uploads Table -->
+        <div class="dash-table-wrap">
+          <h3 class="dash-table-title">All Upload Records</h3>
+          <table class="dash-table" id="adminTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>User</th>
+                <th>File Name</th>
+                <th>Plastic Type</th>
+                <th>Confidence</th>
+                <th>Recommended Use</th>
+                <th>Strength</th>
+                <th>CO₂ Saved</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody">
+              <tr><td colspan="8" class="table-loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Registered Users Section -->
+        <div class="dash-users-section">
+          <h3 class="dash-table-title">Registered Users</h3>
+          <div class="admin-users-grid" id="adminUsersGrid">
+            <!-- User cards rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="logo" style="justify-content:center;margin-bottom:12px">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">PlastiCore<em>AI</em></span>
+      </div>
+      <p class="footer-note">AI-powered plastic waste classification & construction reuse mapping.</p>
+    </div>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
