@@ -1,58 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard — PlastiCore AI</title>
-  <meta name="description" content="View your plastic waste analysis history, manage data, and download reports."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-  <!-- HEADER -->
+  <div id="toastContainer" class="toast-container"></div>
+
   <header class="site-header">
     <div class="header-inner">
-      <a href="/index.html" class="logo">
+      <a href="/" class="logo">
         <span class="logo-icon">◈</span>
         <span class="logo-text">PlastiCore<em>AI</em></span>
       </a>
       <nav class="header-nav">
-        <a href="/index.html">Home</a>
-        <a href="/index.html#upload-section">Analyze</a>
+        <a href="/">Home</a>
+        <a href="/#upload-section">Analyze</a>
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/dashboard.html" class="active">Dashboard</a>
       </nav>
-      <div class="dash-user-bar">
-        <span class="dash-user-name" id="dashUserName">User</span>
-        <span class="role-badge" id="dashUserRole">user</span>
-        <button class="btn-ghost btn-sm" id="dashLogoutBtn">Logout</button>
+      <div class="header-actions">
+        <button class="icon-btn" id="themeToggleBtn" title="Toggle dark/light mode">🌙</button>
+        <button class="lang-btn" id="langToggleBtn">EN / తె</button>
+        <div class="dash-user-bar">
+          <span class="dash-user-name" id="dashUserName">User</span>
+          <span class="role-badge" id="dashUserRole">user</span>
+          <button class="btn-ghost btn-sm" id="dashLogoutBtn" data-i18n="nav_logout">Logout</button>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- DASHBOARD CONTAINER -->
   <section class="dashboard-section">
     <div class="section-inner">
 
-      <!-- ═══════ USER DASHBOARD ═══════ -->
+      <!-- USER DASHBOARD -->
       <div id="userDashboard" style="display:none">
         <div class="dash-title-row">
           <div>
-            <h1 class="section-title">My Dashboard</h1>
-            <p class="section-sub">Your personal upload history</p>
+            <h1 class="section-title" data-i18n="dashboard_title">My Dashboard</h1>
+            <p class="section-sub" data-i18n="dashboard_sub">Your personal upload history</p>
           </div>
-          <a href="/index.html#upload-section" class="btn-primary">🔬 Analyze New Images →</a>
+          <a href="/#upload-section" class="btn-primary" data-i18n="analyze_new">🔬 Analyze New Images →</a>
         </div>
 
+        <!-- Stat Cards -->
         <div class="dash-stat-row">
           <div class="dash-stat-card">
             <div class="dash-stat-icon">📊</div>
             <div class="dash-stat-value" id="userUploadCount">0</div>
-            <div class="dash-stat-label">Total Uploads</div>
+            <div class="dash-stat-label" data-i18n="total_uploads">Total Uploads</div>
+          </div>
+          <div class="dash-stat-card highlight-card">
+            <div class="dash-stat-icon">⭐</div>
+            <div class="dash-stat-value" id="userPoints">0</div>
+            <div class="dash-stat-label" data-i18n="points_label">My Points</div>
+          </div>
+          <div class="dash-stat-card">
+            <div class="dash-stat-icon">🏅</div>
+            <div class="dash-stat-value badge-val" id="userBadge">Beginner</div>
+            <div class="dash-stat-label" data-i18n="badge_label">Badge</div>
+          </div>
+          <div class="dash-stat-card">
+            <div class="dash-stat-icon">🌿</div>
+            <div class="dash-stat-value" id="userCo2">0</div>
+            <div class="dash-stat-label" data-i18n="co2_saved">CO₂ Saved (kg)</div>
           </div>
         </div>
 
+        <!-- Impact Chart -->
+        <div class="dash-chart-section" id="userChartSection" style="display:none">
+          <h3 class="dash-table-title">Environmental Impact</h3>
+          <div class="chart-container">
+            <canvas id="userImpactChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard-section">
+          <h3 class="dash-table-title" data-i18n="leaderboard_title">🏆 Leaderboard</h3>
+          <div class="leaderboard-list" id="leaderboardList">
+            <div class="table-loading">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Upload History Table -->
         <div class="dash-table-wrap">
+          <h3 class="dash-table-title">Upload History</h3>
           <table class="dash-table" id="userTable">
             <thead>
               <tr>
@@ -63,16 +103,17 @@
                 <th>Recommended Use</th>
                 <th>Strength</th>
                 <th>CO₂ Saved</th>
+                <th>Reuse Ideas</th>
               </tr>
             </thead>
             <tbody id="userTableBody">
-              <tr><td colspan="7" class="table-loading">Loading…</td></tr>
+              <tr><td colspan="8" class="table-loading">Loading…</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- ═══════ ADMIN DASHBOARD ═══════ -->
+      <!-- ADMIN DASHBOARD -->
       <div id="adminDashboard" style="display:none">
         <div class="dash-title-row">
           <div>
@@ -85,7 +126,6 @@
           </div>
         </div>
 
-        <!-- Stats Row -->
         <div class="dash-stat-row">
           <div class="dash-stat-card">
             <div class="dash-stat-icon">📊</div>
@@ -96,6 +136,19 @@
             <div class="dash-stat-icon">👥</div>
             <div class="dash-stat-value" id="adminUserCount">0</div>
             <div class="dash-stat-label">Registered Users</div>
+          </div>
+          <div class="dash-stat-card">
+            <div class="dash-stat-icon">🌿</div>
+            <div class="dash-stat-value" id="adminCo2Total">0</div>
+            <div class="dash-stat-label">Total CO₂ Saved (kg)</div>
+          </div>
+        </div>
+
+        <!-- Admin Impact Chart -->
+        <div class="dash-chart-section" id="adminChartSection" style="display:none">
+          <h3 class="dash-table-title">Platform Environmental Impact</h3>
+          <div class="chart-container">
+            <canvas id="adminImpactChart"></canvas>
           </div>
         </div>
 
@@ -131,7 +184,6 @@
           </div>
         </div>
 
-        <!-- All Uploads Table -->
         <div class="dash-table-wrap">
           <h3 class="dash-table-title">All Upload Records</h3>
           <table class="dash-table" id="adminTable">
@@ -153,30 +205,27 @@
           </table>
         </div>
 
-        <!-- Registered Users Section -->
         <div class="dash-users-section">
           <h3 class="dash-table-title">Registered Users</h3>
-          <div class="admin-users-grid" id="adminUsersGrid">
-            <!-- User cards rendered by JS -->
-          </div>
+          <div class="admin-users-grid" id="adminUsersGrid"></div>
         </div>
       </div>
 
     </div>
   </section>
 
-  <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="logo" style="justify-content:center;margin-bottom:12px">
         <span class="logo-icon">◈</span>
         <span class="logo-text">PlastiCore<em>AI</em></span>
       </div>
-      <p class="footer-note">AI-powered plastic waste classification & construction reuse mapping.</p>
+      <p class="footer-note">AI-powered plastic waste classification &amp; construction reuse mapping.</p>
     </div>
   </footer>
 
   <script src="auth.js"></script>
+  <script src="lang.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

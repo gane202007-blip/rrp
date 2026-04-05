@@ -1,28 +1,13 @@
 /**
  * PlastiCore AI — Auth Client Logic
- * ===================================
- * Handles login, register, logout, and auth state management.
- * JWT tokens are stored in localStorage.
- * 
- * BEGINNER NOTE:
- *   - After login/register, the JWT token is saved to localStorage
- *   - Every API call to protected routes includes: Authorization: Bearer <token>
- *   - getUser() decodes the token to get user info without an API call
  */
 
 const API_BASE = '/api';
 
-// ══════════════════════════════════════
-// AUTH STATE HELPERS
-// ══════════════════════════════════════
-
-/** Check if user is logged in (has a valid token) */
 function isLoggedIn() {
   const token = localStorage.getItem('plasticore_token');
   if (!token) return false;
-  
   try {
-    // Check if token is expired
     const payload = JSON.parse(atob(token.split('.')[1]));
     return payload.exp * 1000 > Date.now();
   } catch {
@@ -30,18 +15,15 @@ function isLoggedIn() {
   }
 }
 
-/** Get stored JWT token */
 function getToken() {
   return localStorage.getItem('plasticore_token');
 }
 
-/** Get user info from stored data */
 function getUser() {
   const data = localStorage.getItem('plasticore_user');
   return data ? JSON.parse(data) : null;
 }
 
-/** Get auth headers for API calls */
 function authHeaders() {
   const token = getToken();
   return {
@@ -50,23 +32,15 @@ function authHeaders() {
   };
 }
 
-// ══════════════════════════════════════
-// LOGIN
-// ══════════════════════════════════════
-
 async function handleLogin(e) {
   e.preventDefault();
   const form = e.target;
   const btn = form.querySelector('button[type="submit"]');
   const errorDiv = document.getElementById('authError');
-  
   const email = form.email.value.trim();
   const password = form.password.value;
 
-  if (!email || !password) {
-    showAuthError('Please fill in all fields');
-    return;
-  }
+  if (!email || !password) { showAuthError('Please fill in all fields'); return; }
 
   btn.disabled = true;
   btn.textContent = 'Signing in…';
@@ -78,18 +52,10 @@ async function handleLogin(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-
     const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.message || 'Login failed');
-    }
-
-    // Save token and user info
+    if (!res.ok) throw new Error(data.message || 'Login failed');
     localStorage.setItem('plasticore_token', data.token);
     localStorage.setItem('plasticore_user', JSON.stringify(data.user));
-
-    // Redirect to dashboard
     window.location.href = '/dashboard.html';
   } catch (err) {
     showAuthError(err.message);
@@ -98,16 +64,11 @@ async function handleLogin(e) {
   }
 }
 
-// ══════════════════════════════════════
-// REGISTER
-// ══════════════════════════════════════
-
 async function handleRegister(e) {
   e.preventDefault();
   const form = e.target;
   const btn = form.querySelector('button[type="submit"]');
   const errorDiv = document.getElementById('authError');
-
   const name = form.name.value.trim();
   const email = form.email.value.trim();
   const password = form.password.value;
@@ -115,23 +76,10 @@ async function handleRegister(e) {
   const role = form.role.value;
   const adminSecretKey = form.adminSecretKey ? form.adminSecretKey.value.trim() : '';
 
-  // Validation
-  if (!name || !email || !password || !confirmPassword) {
-    showAuthError('Please fill in all fields');
-    return;
-  }
-  if (password.length < 6) {
-    showAuthError('Password must be at least 6 characters');
-    return;
-  }
-  if (password !== confirmPassword) {
-    showAuthError('Passwords do not match');
-    return;
-  }
-  if (role === 'admin' && !adminSecretKey) {
-    showAuthError('Admin secret key is required for admin registration');
-    return;
-  }
+  if (!name || !email || !password || !confirmPassword) { showAuthError('Please fill in all fields'); return; }
+  if (password.length < 6) { showAuthError('Password must be at least 6 characters'); return; }
+  if (password !== confirmPassword) { showAuthError('Passwords do not match'); return; }
+  if (role === 'admin' && !adminSecretKey) { showAuthError('Admin secret key is required'); return; }
 
   btn.disabled = true;
   btn.textContent = 'Creating account…';
@@ -143,18 +91,10 @@ async function handleRegister(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, role, adminSecretKey }),
     });
-
     const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.message || 'Registration failed');
-    }
-
-    // Save token and user info
+    if (!res.ok) throw new Error(data.message || 'Registration failed');
     localStorage.setItem('plasticore_token', data.token);
     localStorage.setItem('plasticore_user', JSON.stringify(data.user));
-
-    // Redirect to dashboard
     window.location.href = '/dashboard.html';
   } catch (err) {
     showAuthError(err.message);
@@ -163,19 +103,11 @@ async function handleRegister(e) {
   }
 }
 
-// ══════════════════════════════════════
-// LOGOUT
-// ══════════════════════════════════════
-
 function handleLogout() {
   localStorage.removeItem('plasticore_token');
   localStorage.removeItem('plasticore_user');
   window.location.href = '/login.html';
 }
-
-// ══════════════════════════════════════
-// UI HELPERS
-// ══════════════════════════════════════
 
 function showAuthError(message) {
   const errorDiv = document.getElementById('authError');
@@ -185,7 +117,6 @@ function showAuthError(message) {
   }
 }
 
-/** Toggle admin secret key field visibility based on role selection */
 function toggleAdminKey() {
   const roleSelect = document.getElementById('roleSelect');
   const adminKeyGroup = document.getElementById('adminKeyGroup');
@@ -194,52 +125,22 @@ function toggleAdminKey() {
   }
 }
 
-/** Update navigation based on auth state (used on index.html) */
-function updateNavAuth() {
-  const nav = document.querySelector('.header-nav');
-  if (!nav) return;
+/** Update the header auth area (Login/Signup or user info) */
+function updateHeaderAuth() {
+  const area = document.getElementById('headerAuthArea');
+  if (!area) return;
 
   if (isLoggedIn()) {
     const user = getUser();
-    // Add dashboard and logout links
-    const dashLink = document.createElement('a');
-    dashLink.href = '/dashboard.html';
-    dashLink.textContent = '📊 Dashboard';
-    dashLink.className = 'nav-auth-link';
-
-    const logoutLink = document.createElement('a');
-    logoutLink.href = '#';
-    logoutLink.textContent = 'Logout';
-    logoutLink.className = 'nav-auth-link nav-logout';
-    logoutLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      handleLogout();
-    });
-
-    const userBadge = document.createElement('span');
-    userBadge.className = 'nav-user-badge';
-    userBadge.textContent = `${user?.name || 'User'} (${user?.role || 'user'})`;
-
-    nav.appendChild(dashLink);
-    nav.appendChild(userBadge);
-    nav.appendChild(logoutLink);
-  } else {
-    const loginLink = document.createElement('a');
-    loginLink.href = '/login.html';
-    loginLink.textContent = 'Login';
-    loginLink.className = 'nav-auth-link';
-
-    const regLink = document.createElement('a');
-    regLink.href = '/register.html';
-    regLink.textContent = 'Sign Up';
-    regLink.className = 'nav-auth-link nav-signup';
-
-    nav.appendChild(loginLink);
-    nav.appendChild(regLink);
+    area.innerHTML = `
+      <a href="/dashboard.html" class="btn-ghost btn-sm">Dashboard</a>
+      <button class="btn-ghost btn-sm" id="headerLogoutBtn">Logout</button>
+    `;
+    document.getElementById('headerLogoutBtn')?.addEventListener('click', handleLogout);
   }
+  // else default login/signup links are already in HTML
 }
 
-// Run nav update on page load for index.html
 document.addEventListener('DOMContentLoaded', () => {
-  updateNavAuth();
+  updateHeaderAuth();
 });

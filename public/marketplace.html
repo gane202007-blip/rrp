@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Marketplace — PlastiCore AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">PlastiCore<em>AI</em></span>
+      </a>
+      <nav class="header-nav">
+        <a href="/">Home</a>
+        <a href="/#upload-section">Analyze</a>
+        <a href="/marketplace.html" class="active">Marketplace</a>
+        <a href="/dashboard.html">Dashboard</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" id="themeToggleBtn" title="Toggle dark/light mode">🌙</button>
+        <div id="headerAuthArea">
+          <a href="/login.html" class="btn-ghost btn-sm">Login</a>
+          <a href="/register.html" class="btn-primary btn-sm">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="market-hero">
+    <div class="section-inner">
+      <h1 class="section-title">♻️ Plastic Marketplace</h1>
+      <p class="section-sub">Buy, sell, or donate plastic waste for sustainable reuse.</p>
+      <button class="btn-primary" id="openListingModal">+ List an Item</button>
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <section class="market-filters-section">
+    <div class="section-inner">
+      <div class="market-filter-bar">
+        <select class="form-input form-select filter-input" id="mktCategoryFilter">
+          <option value="">All Categories</option>
+          <option value="sell">For Sale</option>
+          <option value="donate">Donation</option>
+        </select>
+        <select class="form-input form-select filter-input" id="mktTypeFilter">
+          <option value="">All Plastic Types</option>
+          <option value="PET">PET</option>
+          <option value="HDPE">HDPE</option>
+          <option value="PVC">PVC</option>
+          <option value="LDPE">LDPE</option>
+          <option value="PP">PP</option>
+          <option value="PS">PS</option>
+          <option value="Unknown">Other</option>
+        </select>
+        <button class="btn-primary btn-sm" id="mktApplyFilter">Filter</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LISTINGS GRID -->
+  <section class="market-section">
+    <div class="section-inner">
+      <div class="market-grid" id="marketGrid">
+        <div class="table-loading">Loading listings…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CREATE LISTING MODAL -->
+  <div class="modal-overlay" id="listingModal" style="display:none">
+    <div class="modal-box">
+      <button class="modal-close" id="closeListingModal">✕</button>
+      <h2 class="modal-title">List Your Plastic</h2>
+      <form id="listingForm" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input type="text" class="form-input" id="mktTitle" placeholder="e.g. 10 kg PET bottles" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input form-select" id="mktCategory">
+            <option value="sell">For Sale</option>
+            <option value="donate">Donation</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plastic Type</label>
+          <select class="form-input form-select" id="mktPlasticType">
+            <option value="PET">PET</option>
+            <option value="HDPE">HDPE</option>
+            <option value="PVC">PVC</option>
+            <option value="LDPE">LDPE</option>
+            <option value="PP">PP</option>
+            <option value="PS">PS</option>
+            <option value="Unknown">Other/Mixed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input type="text" class="form-input" id="mktQuantity" placeholder="e.g. 10 kg, 50 bottles"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (₹) — set 0 for free</label>
+          <input type="number" class="form-input" id="mktPrice" placeholder="0" min="0" value="0"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input" id="mktDescription" rows="3" placeholder="Describe the plastic waste…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact (phone or email)</label>
+          <input type="text" class="form-input" id="mktContact" placeholder="Your contact info"/>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%">Publish Listing</button>
+        <div id="mktFormMsg" class="form-msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="logo" style="justify-content:center;margin-bottom:12px">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">PlastiCore<em>AI</em></span>
+      </div>
+      <p class="footer-note">AI-powered plastic waste classification &amp; construction reuse mapping.</p>
+    </div>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="lang.js"></script>
+  <script src="marketplace.js"></script>
+</body>
+</html>

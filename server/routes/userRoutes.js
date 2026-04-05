@@ -1,38 +1,20 @@
-/**
- * User Routes (Protected — logged-in users only)
- * ===============================================
- * POST /api/user/uploads  → Save analysis results to database
- * GET  /api/user/uploads  → Get ONLY the current user's uploads
- * 
- * BEGINNER NOTE:
- *   - All routes here require a valid JWT token
- *   - Users can only see their OWN data (filtered by userId)
- *   - The protect middleware adds req.user with the logged-in user's info
- */
-
 const express = require('express');
 const Upload = require('../models/Upload');
+const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { getSuggestions } = require('../utils/reuseSuggestions');
 
 const router = express.Router();
-
-// All routes in this file require authentication
 router.use(protect);
 
-// ──────────────────────────────────────
-// POST /api/user/uploads
-// Save one or more analysis results
-// Body: { results: [ { fileName, plasticType, confidence, ... }, ... ] }
-// ──────────────────────────────────────
+// POST /api/user/uploads — Save analysis results and award points
 router.post('/uploads', async (req, res) => {
   try {
     const { results } = req.body;
-
     if (!results || !Array.isArray(results) || results.length === 0) {
       return res.status(400).json({ message: 'No results to save' });
     }
 
-    // Add userId to each result before saving
     const uploadsToSave = results.map((r) => ({
       userId: req.user._id,
       fileName: r.fileName || 'unknown',
@@ -46,14 +28,23 @@ router.post('/uploads', async (req, res) => {
       energySaved: r.energySaved || 0,
       waterSaved: r.waterSaved || 0,
       visualClues: r.visualClues || '',
+      reuseSuggestions: r.isPlastic ? getSuggestions(r.plasticType) : [],
     }));
 
-    // Insert all records at once
     const saved = await Upload.insertMany(uploadsToSave);
+
+    // Award +10 points per uploaded item
+    const pointsEarned = saved.length * 10;
+    const user = await User.findById(req.user._id);
+    user.points = (user.points || 0) + pointsEarned;
+    await user.save();
 
     res.status(201).json({
       message: `${saved.length} result(s) saved successfully`,
       uploads: saved,
+      pointsEarned,
+      totalPoints: user.points,
+      badge: user.badge,
     });
   } catch (error) {
     console.error('Save upload error:', error.message);
@@ -61,24 +52,37 @@ router.post('/uploads', async (req, res) => {
   }
 });
 
-// ──────────────────────────────────────
-// GET /api/user/uploads
-// Get current user's upload history
-// Only returns records where userId matches the logged-in user
-// ──────────────────────────────────────
+// GET /api/user/uploads — Get current user's upload history
 router.get('/uploads', async (req, res) => {
   try {
-    // Filter by current user's ID — users can never see other users' data
-    const uploads = await Upload.find({ userId: req.user._id })
-      .sort({ createdAt: -1 }); // Newest first
-
-    res.json({
-      count: uploads.length,
-      uploads,
-    });
+    const uploads = await Upload.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    res.json({ count: uploads.length, uploads });
   } catch (error) {
     console.error('Get uploads error:', error.message);
     res.status(500).json({ message: 'Failed to fetch uploads' });
+  }
+});
+
+// GET /api/user/profile — Return current user points and badge
+router.get('/profile', async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch profile' });
+  }
+});
+
+// GET /api/user/leaderboard — Top 10 users by points
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const leaders = await User.find({ role: 'user' })
+      .select('name points badge')
+      .sort({ points: -1 })
+      .limit(10);
+    res.json({ leaderboard: leaders });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch leaderboard' });
   }
 });
 

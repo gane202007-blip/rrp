@@ -1,0 +1,117 @@
+Upgrade my existing Node.js + Express + MongoDB plastic waste reuse system.
+
+Current system already includes:
+- JWT authentication (login/register)
+- Upload plastic waste
+- Dashboard
+- Admin panel
+- Role-based access
+
+Now enhance it with the following advanced features:
+
+-----------------------------------
+1. AI REUSE SUGGESTION SYSTEM
+-----------------------------------
+- When a user uploads plastic waste (image + category), generate reuse ideas
+- Example:
+  Bottle → plant pot, bird feeder
+  Plastic bag → eco-bricks
+- Store suggestions in database (Upload model)
+- Show suggestions on dashboard after upload
+- Use simple rule-based logic or OpenAI API (optional)
+
+-----------------------------------
+2. REWARD / POINT SYSTEM
+-----------------------------------
+- Add "points" field in User model
+- Award points:
+  +10 for upload
+  +20 for confirmed recycle
+- Show points on dashboard
+- Create leaderboard (top users)
+- Add badge system (Beginner, Eco Hero, Champion)
+
+-----------------------------------
+3. NEARBY RECYCLER FINDER (MAP)
+-----------------------------------
+- Add Google Maps integration
+- Show nearby recycling centers based on user location
+- Add button: "Find recyclers near me"
+- Display markers on map
+- (Optional: store recyclers in DB or use API)
+
+-----------------------------------
+4. ENVIRONMENTAL IMPACT DASHBOARD
+-----------------------------------
+- Show statistics:
+  - Total plastic uploaded (kg)
+  - CO₂ saved (approx calculation)
+  - Waste recycled count
+- Display using charts (Chart.js)
+- Add visual cards on dashboard
+
+-----------------------------------
+5. MULTILINGUAL SUPPORT (ENGLISH + TELUGU)
+-----------------------------------
+- Add language toggle button
+- Store translations in JSON:
+  en.json, te.json
+- Dynamically switch UI text
+- Translate main pages: index, login, dashboard
+
+-----------------------------------
+6. MARKETPLACE FEATURE
+-----------------------------------
+- Users can:
+  - Sell plastic waste
+  - Donate plastic
+- Add new model: MarketplaceItem
+- Fields:
+  title, description, price, contact, userId
+- Create pages:
+  - marketplace.html
+- Add API routes:
+  - POST /api/marketplace
+  - GET /api/marketplace
+- Show items as cards
+
+-----------------------------------
+7. UI/UX IMPROVEMENT (MODERN DESIGN)
+-----------------------------------
+- Apply eco-friendly green theme 🌱
+- Add:
+  - Card layouts
+  - Smooth animations
+  - Responsive design
+- Improve dashboard layout
+- Add navbar and footer
+- Add dark mode toggle
+
+-----------------------------------
+EXTRA (OPTIONAL BUT IMPRESSIVE)
+-----------------------------------
+- Add notifications (toast messages)
+- Add image preview before upload
+- Add loading spinner
+- Make it PWA (installable)
+
+-----------------------------------
+TECH REQUIREMENTS
+-----------------------------------
+Frontend:
+- HTML, CSS, JavaScript (or React optional)
+
+Backend:
+- Node.js + Express
+
+Database:
+- MongoDB
+
+-----------------------------------
+OUTPUT REQUIRED
+-----------------------------------
+- Updated folder structure
+- Backend code changes
+- Frontend code updates
+- New models and routes
+- Setup instructions

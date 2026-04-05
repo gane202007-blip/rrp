@@ -1,65 +1,81 @@
 # PlastiCore AI
 
 ## Overview
-PlastiCore AI is a Plastic Waste Reuse System. It classifies plastic waste (PET, HDPE, PVC, LDPE, PP, PS) using AI and maps classifications to construction material applications (bricks, roads, insulation, etc.). The system tracks environmental impact (CO₂/energy/water savings) and allows users to generate PDF reports.
+PlastiCore AI is a Plastic Waste Reuse System. It classifies plastic waste (PET, HDPE, PVC, LDPE, PP, PS) using AI and maps classifications to construction material applications.
+
+## Features
+- **AI Reuse Suggestion System** — rule-based reuse ideas per plastic type, stored with each upload
+- **Reward / Point System** — +10 pts per upload, badges (Beginner / Eco Hero / Champion)
+- **Leaderboard** — top 10 users ranked by points
+- **Nearby Recycler Finder** — Leaflet.js + OpenStreetMap + Overpass API to find local recycling centres
+- **Environmental Impact Dashboard** — Chart.js bar/doughnut charts on dashboard
+- **Multilingual Support** — English + Telugu toggle (stored in localStorage)
+- **Marketplace** — buy, sell, donate plastic waste listings with filters
+- **Dark/Light Mode Toggle** — stored in localStorage
+- **Toast Notifications** — styled in/out animated toasts
+- **PWA Manifest** — installable as a web app
+- **Global Stats Bar** — live total uploads, CO₂ saved, user count on homepage
 
 ## Architecture
 
 ### Tech Stack
-- **Frontend**: Vanilla HTML/CSS/JavaScript, Chart.js for charts, jsPDF for PDF exports
+- **Frontend**: Vanilla HTML/CSS/JavaScript, Chart.js, jsPDF, Leaflet.js
 - **Backend**: Node.js + Express.js (serves both API and static frontend)
-- **Database**: MongoDB via Mongoose (uses `mongodb-memory-server` for in-memory development DB)
-- **Auth**: JWT (JSON Web Tokens) with bcryptjs for password hashing, role-based access (user/admin)
-- **AI**: Anthropic Claude Vision API (with smart mock fallback if no API key)
+- **Database**: MongoDB via Mongoose (`mongodb-memory-server` in dev)
+- **Auth**: JWT with bcryptjs, role-based (user/admin)
+- **AI**: Anthropic Claude Vision API (with smart mock fallback)
 
 ### Project Structure
 ```
-├── public/              # Frontend static assets
-│   ├── index.html       # Landing/main page
-│   ├── login.html       # Login page
-│   ├── register.html    # Registration page
-│   ├── dashboard.html   # User/Admin dashboard
-│   ├── app.js           # Core frontend logic (AI analysis, charts, PDF)
-│   ├── auth.js          # Frontend authentication handling
-│   ├── dashboard.js     # Dashboard-specific logic
-│   └── style.css        # Global styles
-└── server/              # Backend
-    ├── server.js         # Express entry point (starts in-memory MongoDB if needed)
-    ├── config/db.js      # MongoDB connection via Mongoose
+├── public/
+│   ├── index.html          # Homepage + upload + map + stats
+│   ├── dashboard.html      # User/Admin dashboard with charts, leaderboard
+│   ├── marketplace.html    # Plastic marketplace
+│   ├── login.html          # Login
+│   ├── register.html       # Register
+│   ├── app.js              # Core analysis + map + stats logic
+│   ├── auth.js             # Auth helpers
+│   ├── dashboard.js        # Dashboard + leaderboard + charts
+│   ├── marketplace.js      # Marketplace logic
+│   ├── lang.js             # Multilingual + theme toggle + toast
+│   ├── style.css           # All styles (dark/light theme)
+│   ├── manifest.json       # PWA manifest
+│   └── locales/
+│       ├── en.json         # English translations
+│       └── te.json         # Telugu translations
+└── server/
+    ├── server.js           # Express entry point + /api/stats
+    ├── config/db.js
     ├── middleware/
-    │   ├── auth.js       # JWT authentication middleware
-    │   └── role.js       # Role-based access control
     ├── models/
-    │   ├── User.js       # Mongoose User schema
-    │   └── Upload.js     # Mongoose Upload/Analysis schema
-    └── routes/
-        ├── authRoutes.js  # /api/auth/* (register, login, me)
-        ├── userRoutes.js  # /api/user/* (user uploads)
-        └── adminRoutes.js # /api/admin/* (admin controls)
+    │   ├── User.js         # + points, badge fields
+    │   ├── Upload.js       # + reuseSuggestions field
+    │   └── MarketplaceItem.js
+    ├── routes/
+    │   ├── authRoutes.js
+    │   ├── userRoutes.js   # + /profile, /leaderboard; awards points
+    │   ├── adminRoutes.js
+    │   └── marketplaceRoutes.js
+    └── utils/
+        └── reuseSuggestions.js  # Rule-based reuse ideas per plastic type
 ```
 
-## Configuration
-
-### Environment Variables (set in Replit Secrets)
-- `JWT_SECRET` - Secret for signing JWTs (auto-generated on setup)
-- `ADMIN_SECRET_KEY` - Secret key required for admin registration
-- `MONGO_URI` - MongoDB connection string (set to `USE_MEMORY_SERVER` for in-memory dev DB)
-- `PORT` - Server port (default: 5000)
-- `NODE_ENV` - Environment (development/production)
-
-### In-Memory MongoDB
-The server uses `mongodb-memory-server` when `MONGO_URI` is `USE_MEMORY_SERVER` or unset. This means data resets on each server restart. For production use, provide a real `MONGO_URI` (e.g., MongoDB Atlas).
-
-## Running the App
-- **Workflow**: "Start application" runs `node server/server.js` on port 5000
-- **Dev command**: `npm run dev` or `npm start`
-- The Express server serves both the API (`/api/*`) and the static frontend
+## Environment Variables
+- `JWT_SECRET` — auto-generated
+- `ADMIN_SECRET_KEY` — auto-generated
+- `MONGO_URI` — `USE_MEMORY_SERVER` (in-memory MongoDB for dev)
+- `PORT` — 5000
+- `NODE_ENV` — development
 
 ## API Endpoints
-- `GET /api/health` - Health check
-- `POST /api/auth/register` - Register user (requires `ADMIN_SECRET_KEY` for admin role)
-- `POST /api/auth/login` - Login, returns JWT
-- `GET /api/auth/me` - Get current user info
-- `GET /api/user/uploads` - Get user's analysis history
-- `GET /api/admin/uploads` - Admin: get all uploads
-- `GET /api/admin/users` - Admin: get all users
+- `GET /api/health`
+- `GET /api/stats` — global platform statistics
+- `POST /api/auth/register` / `POST /api/auth/login` / `GET /api/auth/me`
+- `POST /api/user/uploads` — save results, award points, generate reuse suggestions
+- `GET /api/user/uploads` — user history
+- `GET /api/user/profile` — user points + badge
+- `GET /api/user/leaderboard` — top 10 users
+- `GET /api/marketplace` — list all marketplace items
+- `POST /api/marketplace` — create listing (auth required)
+- `DELETE /api/marketplace/:id` — delete own listing (auth required)
+- `GET /api/admin/uploads` / `GET /api/admin/users` / CSV/PDF reports

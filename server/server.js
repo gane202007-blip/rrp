@@ -1,34 +1,17 @@
-/**
- * PlastiCore AI — Express Server
- * ===============================
- * Entry point for the backend.
- * 
- * This file:
- *   1. Loads environment variables from server/.env
- *   2. Connects to MongoDB (or starts an in-memory MongoDB for development)
- *   3. Sets up Express with middleware (CORS, JSON parsing)
- *   4. Mounts API routes: /api/auth, /api/user, /api/admin
- *   5. Serves the frontend from the public/ folder
- *   6. Starts listening on PORT (default 5000)
- */
-
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
 
-// Load .env variables (from server/.env for local dev)
 require('dotenv').config({ path: path.join(__dirname, '.env') });
-// Also load root-level .env if present
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const connectDB = require('./config/db');
 
-// Import route files
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const marketplaceRoutes = require('./routes/marketplaceRoutes');
 
-/** Fail fast if required env vars are missing (avoids cryptic JWT/DB errors at runtime). */
 function requireEnv(name) {
   const v = process.env[name];
   if (v === undefined || v === null || String(v).trim() === '') {
@@ -42,7 +25,6 @@ requireEnv('JWT_SECRET');
 requireEnv('ADMIN_SECRET_KEY');
 
 async function startServer() {
-  // If MONGO_URI is not set or is set to the placeholder, start in-memory MongoDB
   if (!process.env.MONGO_URI || process.env.MONGO_URI === 'USE_MEMORY_SERVER') {
     console.log('⚡ Starting in-memory MongoDB (development mode)...');
     const { MongoMemoryServer } = require('mongodb-memory-server');
@@ -51,29 +33,59 @@ async function startServer() {
     console.log(`📦 In-memory MongoDB URI: ${process.env.MONGO_URI}`);
   }
 
-  // Create Express app
   const app = express();
-
   app.set('trust proxy', true);
 
-  // ── Middleware ──
-  app.use(cors());                    // Allow cross-origin requests
-  app.use(express.json());            // Parse JSON request bodies
-  app.use(express.urlencoded({ extended: false })); // Parse form data
+  app.use(cors());
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: false }));
 
   // ── API Routes ──
   app.get('/api/health', (req, res) => {
     res.json({ ok: true, uptime: process.uptime() });
   });
 
-  app.use('/api/auth', authRoutes);    // /api/auth/register, /api/auth/login, /api/auth/me
-  app.use('/api/user', userRoutes);    // /api/user/uploads (own data)
-  app.use('/api/admin', adminRoutes);  // /api/admin/uploads, /api/admin/users, /api/admin/reports/*
+  // Environmental stats — public
+  app.get('/api/stats', async (req, res) => {
+    try {
+      const Upload = require('./models/Upload');
+      const User = require('./models/User');
+      const totalUploads = await Upload.countDocuments();
+      const plasticUploads = await Upload.countDocuments({ isPlastic: true });
+      const users = await User.countDocuments();
+      const agg = await Upload.aggregate([
+        { $match: { isPlastic: true } },
+        {
+          $group: {
+            _id: null,
+            totalCo2: { $sum: '$co2Saved' },
+            totalEnergy: { $sum: '$energySaved' },
+            totalWater: { $sum: '$waterSaved' },
+          },
+        },
+      ]);
+      const totals = agg[0] || { totalCo2: 0, totalEnergy: 0, totalWater: 0 };
+      res.json({
+        totalUploads,
+        plasticUploads,
+        users,
+        totalCo2: Math.round(totals.totalCo2 * 10) / 10,
+        totalEnergy: Math.round(totals.totalEnergy * 10) / 10,
+        totalWater: Math.round(totals.totalWater * 10) / 10,
+      });
+    } catch (e) {
+      res.status(500).json({ message: 'Stats error' });
+    }
+  });
 
-  // ── Serve Frontend (static files from public/ folder) ──
+  app.use('/api/auth', authRoutes);
+  app.use('/api/user', userRoutes);
+  app.use('/api/admin', adminRoutes);
+  app.use('/api/marketplace', marketplaceRoutes);
+
+  // ── Serve Frontend ──
   app.use(express.static(path.join(__dirname, '..', 'public')));
 
-  // SPA fallback: serve index.html for non-API GETs only (unknown /api/* returns JSON 404)
   app.get('*', (req, res) => {
     if (req.path.startsWith('/api')) {
       return res.status(404).json({ message: 'Not found' });
@@ -81,7 +93,6 @@ async function startServer() {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
   });
 
-  // ── Start Server ──
   const PORT = process.env.PORT || 5000;
 
   await connectDB();
@@ -89,11 +100,7 @@ async function startServer() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🟢 PlastiCore AI Server running on port ${PORT}`);
     console.log(`   🔌 API: /api  (health: GET /api/health)`);
-    if (process.env.NODE_ENV === 'production') {
-      console.log('   Mode: production\n');
-    } else {
-      console.log('   Mode: development\n');
-    }
+    console.log(`   Mode: ${process.env.NODE_ENV || 'development'}\n`);
   });
 }
 
