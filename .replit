@@ -1,0 +1,47 @@
+modules = ["nodejs-18", "web"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+JWT_SECRET = "76f101d437efb7a0a09a69f0ead205ef8e92f810bd019d0120c58ff6a88c86b5"
+ADMIN_SECRET_KEY = "fa36b9e20c243e1251ff6e9f5e68cbe9"
+MONGO_URI = "USE_MEMORY_SERVER"
+PORT = "5000"
+NODE_ENV = "development"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server/server.js"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["node", "server/server.js"]
