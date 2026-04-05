@@ -23,7 +23,8 @@ const router = express.Router();
  * Takes user ID and role, returns a signed JWT string
  */
 function generateToken(id, role) {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+  const idStr = id != null && typeof id.toString === 'function' ? id.toString() : String(id);
+  return jwt.sign({ id: idStr, role }, process.env.JWT_SECRET, {
     expiresIn: '7d', // Token valid for 7 days
   });
 }

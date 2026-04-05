@@ -208,7 +208,13 @@ function readAsBase64(file, entry) {
   const reader = new FileReader();
   reader.onload = (e) => {
     // Strip the data:image/...;base64, prefix — keep only raw base64
-    entry.base64 = e.target.result.split(',')[1];
+    const raw = e.target.result;
+    const parts = typeof raw === 'string' ? raw.split(',') : [];
+    entry.base64 = parts.length > 1 ? parts[1] : null;
+  };
+  reader.onerror = () => {
+    entry.base64 = null;
+    console.warn('FileReader failed for', file?.name);
   };
   reader.readAsDataURL(file);
 }
@@ -256,19 +262,32 @@ analyzeBtn.addEventListener('click', async () => {
     showToast('Please upload at least one image first.');
     return;
   }
-  // Wait for all base64 reads to complete (they're async)
-  await waitForBase64(uploadedFiles);
+  try {
+    await waitForBase64(uploadedFiles);
+  } catch (err) {
+    showToast(err.message || 'Could not read one or more images.');
+    return;
+  }
   await runAnalysis();
 });
 
 /**
  * waitForBase64 — polls until all entries have their base64 field filled
+ * (bounded wait so a failed FileReader cannot hang analysis forever)
  */
-function waitForBase64(entries) {
-  return new Promise(resolve => {
+function waitForBase64(entries, maxWaitMs = 60000) {
+  const start = Date.now();
+  return new Promise((resolve, reject) => {
     const check = () => {
-      if (entries.every(e => e.base64 !== null)) resolve();
-      else setTimeout(check, 100);
+      if (entries.every((e) => e.base64 !== null)) {
+        resolve();
+        return;
+      }
+      if (Date.now() - start > maxWaitMs) {
+        reject(new Error('Timed out reading image data. Try smaller files or a different format.'));
+        return;
+      }
+      setTimeout(check, 100);
     };
     check();
   });
