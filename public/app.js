@@ -316,8 +316,10 @@ async function runAnalysis() {
 
   // Analyze each image sequentially with step feedback
 // wait until model loads
-while (!model) {
-  await new Promise(r => setTimeout(r, 500));
+if (!model) {
+  showToast("❌ AI model not loaded. Please refresh.");
+  hideLoader();
+  return;
 }
 
 for (let i = 0; i < uploadedFiles.length; i++) {
