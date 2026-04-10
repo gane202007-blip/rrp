@@ -315,31 +315,48 @@ async function runAnalysis() {
   setLoaderStep(steps[0], 5);
 
   // Analyze each image sequentially with step feedback
-  for (let i = 0; i < uploadedFiles.length; i++) {
+// wait until model loads
+while (!model) {
+  await new Promise(r => setTimeout(r, 500));
+}
+
+for (let i = 0; i < uploadedFiles.length; i++) {
   const entry = uploadedFiles[i];
 
   stepIdx = Math.min(stepIdx + 1, steps.length - 1);
-  setLoaderStep(`${steps[stepIdx]} (${i + 1}/${uploadedFiles.length})`,
-    Math.round(10 + (i / uploadedFiles.length) * 80));
+  setLoaderStep(
+    `${steps[stepIdx]} (${i + 1}/${uploadedFiles.length})`,
+    Math.round(10 + (i / uploadedFiles.length) * 80)
+  );
 
-  // ✅ FIXED IMAGE SOURCE
   const img = new Image();
   img.src = entry.preview || entry.data || URL.createObjectURL(entry);
 
-  await new Promise(resolve => img.onload = resolve);
+  await new Promise((resolve) => {
+    if (img.complete) {
+      resolve();
+    } else {
+      img.onload = resolve;
+      img.onerror = () => {
+        console.warn("Image failed, skipping...");
+        resolve();
+      };
+    }
+  });
 
-  // ✅ AI CHECK
   const ai = await analyzeImageAI(img);
+  console.log("AI Result:", ai);
 
   if (ai.result !== "Plastic") {
     showToast("❌ Not a plastic item. Please upload correct image.");
     continue;
   }
 
-  // ✅ ORIGINAL LOGIC
   const result = await analyzeImageWithAI(entry);
   analysisResults.push(result);
   renderResultCard(result);
+
+  await new Promise(r => setTimeout(r, 200)); // smooth UI
 }
 
   setLoaderStep("Finalising…", 95);
