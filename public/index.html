@@ -9,17 +9,12 @@
   <meta name="theme-color" content="#00e5a0"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- ✅ AI LIBRARIES (ADDED) -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
-
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -35,17 +30,17 @@
         <span class="logo-text">PlastiCore<em>AI</em></span>
       </a>
       <nav class="header-nav">
-        <a href="#upload-section">Analyze</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#plastic-guide">Plastic Guide</a>
-        <a href="/marketplace.html">Marketplace</a>
+        <a href="#upload-section" data-i18n="nav_analyze">Analyze</a>
+        <a href="#how-it-works" data-i18n="nav_how">How It Works</a>
+        <a href="#plastic-guide" data-i18n="nav_guide">Plastic Guide</a>
+        <a href="/marketplace.html" data-i18n="nav_marketplace">Marketplace</a>
       </nav>
       <div class="header-actions">
-        <button class="icon-btn" id="themeToggleBtn">🌙</button>
-        <button class="lang-btn" id="langToggleBtn">EN / తె</button>
+        <button class="icon-btn" id="themeToggleBtn" title="Toggle dark/light mode">🌙</button>
+        <button class="lang-btn" id="langToggleBtn" title="Switch language">EN / తె</button>
         <div id="headerAuthArea">
-          <a href="/login.html" class="btn-ghost btn-sm">Login</a>
-          <a href="/register.html" class="btn-primary btn-sm">Sign Up</a>
+          <a href="/login.html" class="btn-ghost btn-sm" data-i18n="nav_login">Login</a>
+          <a href="/register.html" class="btn-primary btn-sm" data-i18n="nav_signup">Sign Up</a>
         </div>
       </div>
     </div>
@@ -55,86 +50,232 @@
   <section class="hero">
     <div class="hero-bg-grid"></div>
     <div class="hero-content">
-      <div class="hero-badge">AI-Powered Waste Intelligence</div>
+      <div class="hero-badge" data-i18n="hero_badge">AI-Powered Waste Intelligence</div>
       <h1 class="hero-title">
-        Turn Plastic Waste<br/>
-        <span class="gradient-text">Into Building Materials</span>
+        <span data-i18n="hero_title_1">Turn Plastic Waste</span><br/>
+        <span class="gradient-text" data-i18n="hero_title_2">Into Building Materials</span>
       </h1>
-      <p class="hero-subtitle">
-        Upload an image of plastic waste. AI classifies and maps reuse instantly.
+      <p class="hero-subtitle" data-i18n="hero_sub">
+        Upload an image of plastic waste. Our AI classifies the type,
+        maps it to construction uses, and calculates environmental impact—instantly.
       </p>
-      <a href="#upload-section" class="btn-primary">Start Analysis →</a>
+      <a href="#upload-section" class="btn-primary" data-i18n="hero_btn">Start Analysis →</a>
+    </div>
+    <div class="hero-visual">
+      <div class="floating-card fc1">PET → Bricks</div>
+      <div class="floating-card fc2">HDPE → Roads</div>
+      <div class="floating-card fc3">LDPE → Tiles</div>
+      <div class="hero-orb"></div>
     </div>
   </section>
 
-  <!-- UPLOAD -->
+  <!-- GLOBAL STATS BAR -->
+  <section class="stats-bar">
+    <div class="stats-bar-inner">
+      <div class="stat-pill">
+        <span class="stat-pill-val" id="globalUploads">—</span>
+        <span class="stat-pill-lbl" data-i18n="total_waste">Total Waste Analyzed</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-val" id="globalCo2">—</span>
+        <span class="stat-pill-lbl" data-i18n="co2_saved">CO₂ Saved (kg)</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-val" id="globalUsers">—</span>
+        <span class="stat-pill-lbl">Active Users</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" class="how-section">
+    <div class="section-inner">
+      <h2 class="section-title" data-i18n="how_title">How It Works</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div class="step-icon">⬆</div>
+          <h3 data-i18n="step1_title">Upload Image</h3>
+          <p data-i18n="step1_desc">Drag & drop or select one or more photos of plastic waste items.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div class="step-icon">⚙</div>
+          <h3 data-i18n="step2_title">AI Analysis</h3>
+          <p data-i18n="step2_desc">Our model detects if it's plastic and classifies it: PET, HDPE, PVC, LDPE, PP, PS.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div class="step-icon">◈</div>
+          <h3 data-i18n="step3_title">Reuse Mapping</h3>
+          <p data-i18n="step3_desc">Each plastic type is matched to construction applications with mix ratios.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">04</div>
+          <div class="step-icon">↓</div>
+          <h3 data-i18n="step4_title">Download Report</h3>
+          <p data-i18n="step4_desc">Export a full PDF report with analysis, recommendations, and impact data.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPLOAD SECTION -->
   <section id="upload-section" class="upload-section">
     <div class="section-inner">
-      <h2 class="section-title">Analyze Your Plastic Waste</h2>
+      <h2 class="section-title" data-i18n="upload_title">Analyze Your Plastic Waste</h2>
+      <p class="section-sub" data-i18n="upload_sub">Upload up to 5 images. Supports JPG, PNG, WEBP.</p>
 
-      <input type="file" id="fileInput" accept="image/*" multiple/>
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-icon">⬆</div>
+        <p class="drop-label" data-i18n="drop_label">Drag & drop images here</p>
+        <p class="drop-hint" data-i18n="drop_or">or</p>
+        <label class="btn-upload" for="fileInput" data-i18n="drop_btn">Browse Files</label>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden/>
+      </div>
 
-      <div id="previewContainer"></div>
+      <div class="preview-grid" id="previewGrid"></div>
 
-      <button id="analyzeBtn" class="btn-primary">Analyze Images</button>
-      <p id="result"></p>
+      <div class="analyze-wrap" id="analyzeWrap" style="display:none">
+        <button class="btn-primary btn-analyze" id="analyzeBtn">
+          <span class="btn-text" data-i18n="analyze_btn">Analyze Images</span>
+          <span class="btn-icon">→</span>
+        </button>
+        <button class="btn-ghost" id="clearBtn" data-i18n="clear_btn">Clear All</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOADER -->
+  <div class="loader-overlay" id="loaderOverlay" style="display:none">
+    <div class="loader-box">
+      <div class="loader-spinner"></div>
+      <p class="loader-label" id="loaderLabel">Initializing AI model…</p>
+      <div class="loader-progress">
+        <div class="loader-bar" id="loaderBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS SECTION -->
+  <section class="results-section" id="resultsSection" style="display:none">
+    <div class="section-inner">
+      <div class="results-header">
+        <h2 class="section-title" data-i18n="results_title">Analysis Results</h2>
+        <button class="btn-download" id="downloadBtn" data-i18n="download_report">↓ Download Report (PDF)</button>
+      </div>
+      <div class="results-grid" id="resultsGrid"></div>
+
+      <div class="chart-section" id="chartSection" style="display:none">
+        <h3 class="chart-title" data-i18n="impact_title">Environmental Impact Summary</h3>
+        <div class="chart-cards" id="chartCards"></div>
+        <div class="chart-container">
+          <canvas id="impactChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEARBY RECYCLERS MAP -->
+  <section id="recycler-map" class="map-section">
+    <div class="section-inner">
+      <h2 class="section-title">📍 Find Nearby Recyclers</h2>
+      <p class="section-sub">Locate plastic recycling centres near you.</p>
+      <button class="btn-primary" id="findRecyclersBtn">Find Recyclers Near Me</button>
+      <div id="mapContainer" class="map-container" style="display:none">
+        <div id="leafletMap" style="height:400px;border-radius:12px;overflow:hidden;margin-top:16px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLASTIC GUIDE -->
+  <section id="plastic-guide" class="guide-section">
+    <div class="section-inner">
+      <h2 class="section-title" data-i18n="guide_title">Plastic-to-Construction Guide</h2>
+      <div class="guide-table-wrap">
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Full Name</th>
+              <th>Construction Use</th>
+              <th>Mix Ratio</th>
+              <th>Strength</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="tag pet">PET</span></td><td>Polyethylene Terephthalate</td><td>Bricks, Paver Blocks</td><td>30% plastic + 70% sand</td><td><span class="strength high">High</span></td></tr>
+            <tr><td><span class="tag hdpe">HDPE</span></td><td>High-Density Polyethylene</td><td>Road Construction, Pipes</td><td>25% plastic + 75% aggregate</td><td><span class="strength high">High</span></td></tr>
+            <tr><td><span class="tag pvc">PVC</span></td><td>Polyvinyl Chloride</td><td>Flooring, Panels</td><td>20% plastic + 80% cement</td><td><span class="strength med">Medium</span></td></tr>
+            <tr><td><span class="tag ldpe">LDPE</span></td><td>Low-Density Polyethylene</td><td>Tiles, Insulation Panels</td><td>35% plastic + 65% sand</td><td><span class="strength med">Medium</span></td></tr>
+            <tr><td><span class="tag pp">PP</span></td><td>Polypropylene</td><td>Roofing Sheets, Beams</td><td>40% plastic + 60% fiber</td><td><span class="strength high">High</span></td></tr>
+            <tr><td><span class="tag ps">PS</span></td><td>Polystyrene</td><td>Lightweight Panels, Foam Blocks</td><td>50% plastic + 50% binder</td><td><span class="strength low">Low</span></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-inner">
-      <span>PlastiCore AI</span>
+      <div class="logo" style="justify-content:center;margin-bottom:12px">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">PlastiCore<em>AI</em></span>
+      </div>
+      <div class="footer-links">
+        <a href="/marketplace.html">Marketplace</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="#plastic-guide">Guide</a>
+      </div>
+      <p class="footer-note" data-i18n="footer_note">AI-powered plastic waste classification &amp; construction reuse mapping. For educational and research purposes.</p>
     </div>
   </footer>
 
-  <!-- ORIGINAL SCRIPTS -->
   <script src="auth.js"></script>
   <script src="lang.js"></script>
-
-  <!-- ✅ AI SCRIPT -->
   <script>
-  const MODEL_URL = "https://teachablemachine.withgoogle.com/models/oe91x_hTUG/"; // 🔴 REPLACE THIS
+const MODEL_URL = "https://teachablemachine.withgoogle.com/models/oe91x_hTUG/"; // paste your Teachable Machine link
 
-  let model;
+let model;
 
-  async function loadModel() {
-    try {
-      const modelURL = MODEL_URL + "model.json";
-      const metadataURL = MODEL_URL + "metadata.json";
-      model = await tmImage.load(modelURL, metadataURL);
-      console.log("Model Loaded");
-    } catch (err) {
-      console.error("Error loading model", err);
-    }
+// Load model
+async function loadPlasticModel() {
+  const modelURL = MODEL_URL + "model.json";
+  const metadataURL = MODEL_URL + "metadata.json";
+  model = await tmImage.load(modelURL, metadataURL);
+  console.log("✅ Model Loaded");
+}
+
+loadPlasticModel();
+
+// Analyze single image (you will call this from app.js)
+async function analyzeImageAI(imgElement) {
+  if (!model) {
+    console.error("Model not loaded yet");
+    return { result: "Error", confidence: 0 };
   }
 
-  loadModel();
+  const prediction = await model.predict(imgElement);
 
-  async function analyzeImageAI(img) {
-    const prediction = await model.predict(img);
-    let best = prediction.reduce((a,b)=>a.probability>b.probability?a:b);
+  let best = prediction.reduce((a, b) =>
+    a.probability > b.probability ? a : b
+  );
 
-    if(best.className==="Plastic" && best.probability>=0.85){
-      return "Plastic";
-    } else {
-      return "Not Plastic";
-    }
+  // 🔥 STRICT FILTER (MAIN FIX)
+  if (best.className === "platic" && best.probability >= 0.85) {
+    return {
+      result: "Plastic",
+      confidence: best.probability
+    };
+  } else {
+    return {
+      result: "Not Plastic",
+      confidence: best.probability
+    };
   }
-
-  document.getElementById("analyzeBtn").onclick = async () => {
-    const file = document.getElementById("fileInput").files[0];
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-
-    img.onload = async () => {
-      const result = await analyzeImageAI(img);
-      document.getElementById("result").innerText = result;
-    }
-  }
-  </script>
-
+}
+</script>
   <script src="app.js"></script>
-
 </body>
 </html>
