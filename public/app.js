@@ -316,15 +316,31 @@ async function runAnalysis() {
 
   // Analyze each image sequentially with step feedback
   for (let i = 0; i < uploadedFiles.length; i++) {
-    const entry = uploadedFiles[i];
-    stepIdx = Math.min(stepIdx + 1, steps.length - 1);
-    setLoaderStep(`${steps[stepIdx]} (${i + 1}/${uploadedFiles.length})`,
-      Math.round(10 + (i / uploadedFiles.length) * 80));
+  const entry = uploadedFiles[i];
 
-    const result = await analyzeImageWithAI(entry);
-    analysisResults.push(result);
-    renderResultCard(result);
+  stepIdx = Math.min(stepIdx + 1, steps.length - 1);
+  setLoaderStep(`${steps[stepIdx]} (${i + 1}/${uploadedFiles.length})`,
+    Math.round(10 + (i / uploadedFiles.length) * 80));
+
+  // ✅ FIXED IMAGE SOURCE
+  const img = new Image();
+  img.src = entry.preview || entry.data || URL.createObjectURL(entry);
+
+  await new Promise(resolve => img.onload = resolve);
+
+  // ✅ AI CHECK
+  const ai = await analyzeImageAI(img);
+
+  if (ai.result !== "Plastic") {
+    showToast("❌ Not a plastic item. Please upload correct image.");
+    continue;
   }
+
+  // ✅ ORIGINAL LOGIC
+  const result = await analyzeImageWithAI(entry);
+  analysisResults.push(result);
+  renderResultCard(result);
+}
 
   setLoaderStep("Finalising…", 95);
   await delay(400);
