@@ -241,8 +241,14 @@ let model;
 
 // Load model
 async function loadPlasticModel() {
+  if (!window.tmImage) {
+    console.error("❌ tmImage not loaded");
+    return;
+  }
+
   const modelURL = MODEL_URL + "model.json";
   const metadataURL = MODEL_URL + "metadata.json";
+
   model = await tmImage.load(modelURL, metadataURL);
   console.log("✅ Model Loaded");
 }
