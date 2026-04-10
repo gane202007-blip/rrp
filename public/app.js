@@ -332,8 +332,7 @@ for (let i = 0; i < uploadedFiles.length; i++) {
   );
 
   const img = new Image();
-  img.src = entry.preview || entry.data || URL.createObjectURL(entry);
-
+  img.src = entry.objectURL;
   await new Promise((resolve) => {
     if (img.complete) {
       resolve();
