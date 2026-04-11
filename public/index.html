@@ -13,8 +13,6 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5"></script>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -234,61 +232,6 @@
 
   <script src="auth.js"></script>
   <script src="lang.js"></script>
-  <script>
-const MODEL_URL = "https://teachablemachine.withgoogle.com/models/oe91x_hTUG/"; // paste your Teachable Machine link
-
-let model;
-
-// Load model
-async function loadPlasticModel() {
-  if (!window.tmImage) {
-    console.error("❌ tmImage not loaded");
-    return;
-  }
-
-  const modelURL = MODEL_URL + "model.json";
-  const metadataURL = MODEL_URL + "metadata.json";
-
-  model = await tmImage.load(modelURL, metadataURL);
-  console.log("✅ Model Loaded");
-}
-
-window.addEventListener("load", async () => {
-  if (!window.tmImage) {
-    console.error("❌ tmImage still not loaded");
-    return;
-  }
-
-  await loadPlasticModel();
-});
-
-// Analyze single image (you will call this from app.js)
-async function analyzeImageAI(imgElement) {
-  if (!model) {
-    console.error("Model not loaded yet");
-    return { result: "Error", confidence: 0 };
-  }
-
-  const prediction = await model.predict(imgElement);
-
-  let best = prediction.reduce((a, b) =>
-    a.probability > b.probability ? a : b
-  );
-
-  // 🔥 STRICT FILTER (MAIN FIX)
-  if (best.className === "platic" && best.probability >= 0.85) {
-    return {
-      result: "Plastic",
-      confidence: best.probability
-    };
-  } else {
-    return {
-      result: "Not Plastic",
-      confidence: best.probability
-    };
-  }
-}
-</script>
   <script src="app.js"></script>
 </body>
 </html>
