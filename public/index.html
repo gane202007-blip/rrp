@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
-<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5"></script>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -253,7 +253,14 @@ async function loadPlasticModel() {
   console.log("✅ Model Loaded");
 }
 
-loadPlasticModel();
+window.addEventListener("load", async () => {
+  if (!window.tmImage) {
+    console.error("❌ tmImage still not loaded");
+    return;
+  }
+
+  await loadPlasticModel();
+});
 
 // Analyze single image (you will call this from app.js)
 async function analyzeImageAI(imgElement) {
