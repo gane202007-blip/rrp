@@ -315,50 +315,16 @@ async function runAnalysis() {
   setLoaderStep(steps[0], 5);
 
   // Analyze each image sequentially with step feedback
-// wait until model loads
-if (!model) {
-  showToast("❌ AI model not loaded. Please refresh.");
-  hideLoader();
-  return;
-}
+  for (let i = 0; i < uploadedFiles.length; i++) {
+    const entry = uploadedFiles[i];
+    stepIdx = Math.min(stepIdx + 1, steps.length - 1);
+    setLoaderStep(`${steps[stepIdx]} (${i + 1}/${uploadedFiles.length})`,
+      Math.round(10 + (i / uploadedFiles.length) * 80));
 
-for (let i = 0; i < uploadedFiles.length; i++) {
-  const entry = uploadedFiles[i];
-
-  stepIdx = Math.min(stepIdx + 1, steps.length - 1);
-  setLoaderStep(
-    `${steps[stepIdx]} (${i + 1}/${uploadedFiles.length})`,
-    Math.round(10 + (i / uploadedFiles.length) * 80)
-  );
-
-  const img = new Image();
-  img.src = entry.objectURL;
-  await new Promise((resolve) => {
-    if (img.complete) {
-      resolve();
-    } else {
-      img.onload = resolve;
-      img.onerror = () => {
-        console.warn("Image failed, skipping...");
-        resolve();
-      };
-    }
-  });
-
-  const ai = await analyzeImageAI(img);
-  console.log("AI Result:", ai);
-
-  if (ai.result !== "Plastic") {
-    showToast("❌ Not a plastic item. Please upload correct image.");
-    continue;
+    const result = await analyzeImageWithAI(entry);
+    analysisResults.push(result);
+    renderResultCard(result);
   }
-
-  const result = await analyzeImageWithAI(entry);
-  analysisResults.push(result);
-  renderResultCard(result);
-
-  await new Promise(r => setTimeout(r, 200)); // smooth UI
-}
 
   setLoaderStep("Finalising…", 95);
   await delay(400);
@@ -927,24 +893,15 @@ function setLoaderStep(label, pct) {
 /**
  * showToast — shows a temporary error/info message at the bottom right
  */
-function showToast(message, type = 'info', duration = 4000) {
-  // Use the new container-based system if available (from lang.js)
-  let container = document.getElementById('toastContainer');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'toastContainer';
-    container.className = 'toast-container';
-    document.body.appendChild(container);
-  }
+function showToast(message) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+
   const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
+  toast.className = 'toast';
   toast.textContent = message;
-  container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('toast-show'));
-  setTimeout(() => {
-    toast.classList.remove('toast-show');
-    toast.addEventListener('transitionend', () => toast.remove());
-  }, duration);
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
 }
 
 /* =========================================================
@@ -998,10 +955,7 @@ async function saveResultsToServer(results) {
 
     if (res.ok) {
       const data = await res.json();
-      const msg = data.pointsEarned
-        ? `✅ Saved! +${data.pointsEarned} pts earned (${data.totalPoints} total) — ${data.badge}`
-        : `✅ ${data.message} — View in Dashboard`;
-      showToast(msg, 'success');
+      showToast(`✅ ${data.message} — View in Dashboard`);
     } else {
       console.warn('Failed to save results to server');
     }
@@ -1010,106 +964,3 @@ async function saveResultsToServer(results) {
   }
 }
 
-
-/* =========================================================
-   SECTION 17: GLOBAL STATS + NEARBY RECYCLERS MAP
-   ========================================================= */
-
-/** Load global platform stats for the homepage stats bar */
-async function loadGlobalStats() {
-  try {
-    const res = await fetch('/api/stats');
-    if (!res.ok) return;
-    const data = await res.json();
-    const uploadsEl = document.getElementById('globalUploads');
-    const co2El = document.getElementById('globalCo2');
-    const usersEl = document.getElementById('globalUsers');
-    if (uploadsEl) uploadsEl.textContent = data.totalUploads;
-    if (co2El) co2El.textContent = data.totalCo2 + ' kg';
-    if (usersEl) usersEl.textContent = data.users;
-  } catch (_) {}
-}
-
-/** Initialise nearby recyclers map using Leaflet + OpenStreetMap */
-function initRecyclersMap(lat, lng) {
-  const container = document.getElementById('mapContainer');
-  const mapEl = document.getElementById('leafletMap');
-  if (!container || !mapEl) return;
-  container.style.display = 'block';
-
-  // Remove old map if exists
-  if (window._leafletMap) {
-    window._leafletMap.remove();
-    window._leafletMap = null;
-    mapEl.innerHTML = '';
-  }
-
-  const map = L.map('leafletMap').setView([lat, lng], 13);
-  window._leafletMap = map;
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 18,
-  }).addTo(map);
-
-  // User location marker
-  L.marker([lat, lng]).addTo(map)
-    .bindPopup('<b>You are here</b>').openPopup();
-
-  // Query OSM Overpass API for recycling centres
-  const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];node["amenity"="recycling"](around:5000,${lat},${lng});out;`;
-
-  fetch(overpassUrl)
-    .then((r) => r.json())
-    .then((data) => {
-      const nodes = data.elements || [];
-      if (nodes.length === 0) {
-        showToast('No recycling centres found nearby. Try expanding your area.', 'info');
-        return;
-      }
-      nodes.forEach((node) => {
-        const name = node.tags?.name || node.tags?.operator || 'Recycling Centre';
-        L.marker([node.lat, node.lon])
-          .addTo(map)
-          .bindPopup(`<b>♻️ ${name}</b><br>${node.tags?.['addr:street'] || ''}`);
-      });
-      showToast(`Found ${nodes.length} recycling point(s) near you!`, 'success');
-    })
-    .catch(() => {
-      showToast('Could not fetch recycling locations. Check your connection.', 'error');
-    });
-}
-
-// ── DOM Ready: Wire up new features ──
-document.addEventListener('DOMContentLoaded', () => {
-  // Load global stats on homepage
-  loadGlobalStats();
-
-  // Nearby recyclers button
-  const findBtn = document.getElementById('findRecyclersBtn');
-  if (findBtn) {
-    findBtn.addEventListener('click', () => {
-      findBtn.disabled = true;
-      findBtn.textContent = 'Locating…';
-      if (!navigator.geolocation) {
-        showToast('Geolocation is not supported by your browser.', 'error');
-        findBtn.disabled = false;
-        findBtn.textContent = 'Find Recyclers Near Me';
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          initRecyclersMap(latitude, longitude);
-          findBtn.textContent = '📍 Map Updated';
-          findBtn.disabled = false;
-        },
-        () => {
-          showToast('Could not get your location. Please allow location access.', 'error');
-          findBtn.disabled = false;
-          findBtn.textContent = 'Find Recyclers Near Me';
-        }
-      );
-    });
-  }
-});
